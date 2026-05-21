@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Flying Club — BS 2083 Calendar</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --sky-deep:     #0A1628;
+    --horizon:      #1E5FA5;
+    --accent:       #4DAAFF;
+    --gold:         #E8A830;
+    --white:        #F0F4FA;
+    --muted:        #7A90B0;
+    --glass:        rgba(255,255,255,0.06);
+    --glass-border: rgba(255,255,255,0.12);
+    --radius-sm:    6px;
+    --radius-md:    12px;
+    --radius-lg:    18px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--sky-deep);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Stars */
+  #sky-bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #1A3A6B 0%, #0A1628 60%);
+    overflow: hidden;
+  }
+  .star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle var(--d) ease-in-out infinite alternate; }
+  @keyframes twinkle { from { opacity: var(--a0); transform: scale(1); } to { opacity: var(--a1); transform: scale(1.4); } }
+
+  /* ─── Top nav ─── */
+  #top-nav {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 20px;
+    background: rgba(10,22,40,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    flex-shrink: 0;
+  }
+  .nav-logo-icon {
+  width: 52px;              /* adjust size */
+  height: 52px;             /* adjust size */
+  border-radius: 20px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+
+  box-shadow:
+    0 0 12px rgba(77,170,255,0.25),
+    inset 0 0 10px rgba(255,255,255,0.05);
+}
+
+.nav-logo-icon img {
+  width: 52px;
+  height: 52px;
+  object-fit: cover;   /* keeps image properly fitted */
+  border-radius: 50%;
+}
+  .nav-title { font-family: 'Bebas Neue', sans-serif; font-size: 19px; letter-spacing: 2px; }
+  .nav-year  { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: var(--gold); letter-spacing: 3px; }
+
+  /* Month prev/next nav */
+  .month-switcher {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .nav-btn {
+    background: var(--glass); border: 1px solid var(--glass-border);
+    color: var(--white); border-radius: var(--radius-md);
+    padding: 5px 16px; cursor: pointer; font-size: 13px; font-weight: 600;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-btn:hover:not(:disabled) { background: rgba(77,170,255,0.18); border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .nav-month-label {
+    font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 3px;
+    color: var(--white); min-width: 110px; text-align: center;
+  }
+  .nav-month-label span { font-size: 13px; color: var(--muted); font-family: 'DM Sans', sans-serif; letter-spacing: 0; font-weight: 400; }
+
+  /* ─── Main content area ─── */
+  #main {
+    position: relative; z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 10px 16px 10px;
+    max-width: 1060px;
+    width: 100%;
+    margin: 0 auto;
+    min-height: 0;
+  }
+
+  /* ─── Month header strip ─── */
+  .mpage-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px;
+    background: linear-gradient(100deg, rgba(26,63,107,0.7), rgba(10,22,40,0.5));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 8px;
+    backdrop-filter: blur(12px);
+    position: relative; overflow: hidden;
+    flex-shrink: 0;
+    animation: fadein 0.25s ease;
+  }
+  .mpage-header::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), var(--gold), transparent);
+  }
+  @keyframes fadein { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .mpage-name { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 4px; line-height: 1; }
+  .mpage-meta { text-align: right; }
+  .mpage-season { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .mpage-year-lbl { font-family: 'Bebas Neue', sans-serif; font-size: 20px; color: var(--gold); letter-spacing: 2px; }
+  .mpage-evcount {
+    display: inline-block; font-size: 10px; padding: 2px 9px; border-radius: 99px;
+    background: rgba(77,170,255,0.2); color: var(--accent); font-weight: 600; margin-top: 3px;
+  }
+
+  /* ─── Calendar ─── */
+  .cal-wrap {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+  animation: fadein 0.28s ease;
+
+  width: 1020px;      /* increase horizontal size */
+  height: 360px;     /* increase vertical size */
+
+  padding: 20px;
+}
+  .day-headers {
+    display: grid; grid-template-columns: repeat(7,1fr);
+    border-bottom: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.03);
+  }
+  .day-hdr {
+    text-align: center; font-size: 11px; font-weight: 600;
+    padding: 7px 0; letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
+  }
+  .day-hdr.weekend { color: #F06080; }
+  .day-grid { padding: 4px; }
+  .day-row { display: grid; grid-template-columns: repeat(7,1fr); }
+
+  .day-cell {
+    padding: 4px 2px 3px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    transition: background 0.12s;
+  }
+  .day-cell:hover { background: rgba(255,255,255,0.09); }
+  .day-cell.selected { background: rgba(77,170,255,0.2); outline: 1px solid rgba(77,170,255,0.5); }
+
+  /* BS day number */
+  .bs-num {
+    font-size: 14px; line-height: 1.3; font-family: 'DM Mono', monospace;
+    color: var(--white); font-weight: 500;
+  }
+  .bs-num.has-event { color: var(--accent); font-weight: 700; }
+  .bs-num.weekend   { color: #F06080; }
+
+  /* AD date small below */
+  .ad-num {
+    font-size: 9px; color: var(--muted); line-height: 1; font-family: 'DM Mono', monospace;
+    opacity: 0.75;
+  }
+  .ad-num.weekend { color: rgba(240,96,128,0.65); }
+
+  .dot-row { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 1px; }
+  .ev-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ─── Event panel ─── */
+  .event-panel {
+    background: rgba(10,18,32,0.88);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    margin-top: 8px;
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    animation: fadein 0.3s ease;
+  }
+  .event-panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.03);
+    flex-shrink: 0;
+  }
+  .event-panel-title {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 7px;
+  }
+  .dot-indicator { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 7px var(--accent); }
+
+  .event-scroll { overflow-y: auto; flex: 1; }
+
+  .event-item {
+    display: grid;
+    grid-template-columns: 52px 1fr 4px;
+    align-items: stretch;
+    gap: 10px;
+    padding: 9px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .event-item:last-child { border-bottom: none; }
+  .event-item:hover { background: rgba(255,255,255,0.04); }
+  .event-item.highlighted { background: rgba(77,170,255,0.07); }
+
+  .ev-date-block { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 2px; }
+  .ev-bs-num  { font-family: 'Bebas Neue', sans-serif; font-size: 26px; line-height: 1; }
+  .ev-ad-date { font-size: 9px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 1px; }
+  .ev-dow     { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 1px; }
+
+  .ev-title { font-size: 13px; font-weight: 600; color: var(--white); line-height: 1.4; }
+  .ev-notes { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .ev-badge {
+    display: inline-block; font-size: 9px; padding: 2px 8px;
+    border-radius: 99px; margin-top: 4px; letter-spacing: 0.5px; font-weight: 600; text-transform: uppercase;
+  }
+  .ev-stripe { border-radius: 2px; }
+
+  .no-events-msg {
+    padding: 18px; font-size: 12px; color: var(--muted); font-style: italic; text-align: center;
+  }
+
+  .legend-row {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    padding: 6px 16px 7px;
+    border-top: 1px solid var(--glass-border);
+    background: rgba(255,255,255,0.02);
+    flex-shrink: 0;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); }
+  .legend-dot  { width: 7px; height: 7px; border-radius: 50%; }
+
+  .show-all-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 10px; letter-spacing: 0.5px; }
+  .show-all-btn:hover { color: var(--white); }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(77,170,255,0.3); border-radius: 99px; }
+
+  @media (max-width: 560px) {
+    .nav-title { display: none; }
+    .mpage-name { font-size: 26px; }
+    .bs-num { font-size: 12px; }
+    .ad-num { font-size: 8px; }
+    .nav-month-label { font-size: 16px; min-width: 80px; }
+    .ev-bs-num { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div id="sky-bg"></div>
+
+<nav id="top-nav">
+  <div class="nav-logo-icon">
+  <img src="flying.jpg" alt="Logo">
+</div>
+    <span class="nav-title">Flying Club — Pulchowk</span>
+  </div>
+  <div class="month-switcher">
+    <button class="nav-btn" id="prevBtn">&#8592; Prev</button>
+    <div class="nav-month-label" id="monthLabel"></div>
+    <button class="nav-btn" id="nextBtn">Next &#8594;</button>
+  </div>
+  <span class="nav-year">BS 2083</span>
+</nav>
+
+<div id="main">
+  <div id="mpage-header" class="mpage-header"></div>
+  <div id="cal-wrap" class="cal-wrap">
+    <div id="day-headers" class="day-headers"></div>
+    <div id="day-grid" class="day-grid"></div>
+  </div>
+  <div id="event-panel" class="event-panel">
+    <div id="ep-header" class="event-panel-header"></div>
+    <div id="ep-list" class="event-scroll"></div>
+    <div id="ep-legend" class="legend-row"></div>
+  </div>
+</div>
+
+<script>
+// ─── Data ───
+const MONTHS = [
+  {name:'Baisakh', days:31, start:2, season:'Spring',  adOffset:0},
+  {name:'Jestha',  days:31, start:5, season:'Summer',  adOffset:31},
+  {name:'Ashadh',  days:32, start:1, season:'Summer',  adOffset:62},
+  {name:'Shrawan', days:32, start:5, season:'Monsoon', adOffset:94},
+  {name:'Bhadra',  days:31, start:2, season:'Monsoon', adOffset:126},
+  {name:'Ashwin',  days:30, start:5, season:'Autumn',  adOffset:157},
+  {name:'Kartik',  days:30, start:0, season:'Autumn',  adOffset:187},
+  {name:'Mangsir', days:29, start:2, season:'Winter',  adOffset:217},
+  {name:'Poush',   days:30, start:3, season:'Winter',  adOffset:246},
+  {name:'Magh',    days:29, start:5, season:'Winter',  adOffset:276},
+  {name:'Falgun',  days:30, start:6, season:'Spring',  adOffset:305},
+  {name:'Chaitra', days:30, start:1, season:'Spring',  adOffset:335},
+];
+
+// BS 2083 Baisakh 1 = April 14, 2026
+const EPOCH = new Date(2026, 3, 14); // months are 0-indexed in JS
+
+const AD_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const WDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const WDAYS_S = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+
+const CATS = ['competition','project','workshop','outreach','admin'];
+const CC = {
+  competition: {dot:'#4DAAFF', bg:'rgba(77,170,255,0.18)', text:'#A8D4FF'},
+  project:     {dot:'#3DD6A0', bg:'rgba(61,214,160,0.18)', text:'#A0EDD1'},
+  workshop:    {dot:'#F5C542', bg:'rgba(245,197,66,0.18)', text:'#FADE96'},
+  outreach:    {dot:'#F06080', bg:'rgba(240,96,128,0.18)', text:'#F8B0C0'},
+  admin:       {dot:'#A090C8', bg:'rgba(160,144,200,0.18)',text:'#C8B8E8'},
+};
+
+const EVENTS = [
+ 
+  
+  {id:5,  month:2,  day:10, name:'RC-Plane Workshop Commencement',     cat:'workshop',    notes:'RC-Plane practical workshop.'},
+  {id:6,  month:8,  day:6, name:'IIT Aeromodeling Competition',     cat:'competition',    notes:'Starting of techfest IIT Bombay.'},
+  {id:7,  month:3,  day:30, name:'Design Build and Fly Competition: ',     cat:'competition',    notes:'Mission Allocation.'},
+  {id:8,  month:5,  day:28, name:'Design Build and Fly Competition: ',     cat:'competition',    notes:'Proposal Submission Window Open.'},
+   {id:9,  month:6,  day:14, name:'Design Build and Fly Competition: ',     cat:'competition',    notes:'Proposal Submission Window Close.'},
+   {id:8,  month:9,  day:18, name:'Design Build and Fly Competition: ',     cat:'competition',    notes:'Final Report Submission Window Open.'},
+   {id:8,  month:10,  day:8, name:'Design Build and Fly Competition: ',     cat:'competition',    notes:'Final Report Submission Window Close.'},
+   {id:8,  month:7,  day:15, name:'IIT Aeromodeling Competition: ',     cat:'competition',    notes:'Proposal Submission.'},
+   {id:8,  month:4,  day:3, name:'IIT Aeromodeling Team Selection: ',     cat:'competition',    notes:'Team Selection for IIT.'},
+   {id:8,  month:2,  day:22, name:'Project Initiation ',     cat:'competition',    notes:'Proposal Submission Opens for Flying Club.'},
+   {id:8,  month:3,  day:11, name:'SRB Seds Flying Club Collaborative Initiation ',     cat:'outreach',    notes:''},
+];
+
+// ─── Helpers ───
+function adDate(monthIdx, bsDay) {
+  const d = new Date(EPOCH);
+  d.setDate(d.getDate() + MONTHS[monthIdx].adOffset + (bsDay - 1));
+  return d;
+}
+function adLabel(monthIdx, bsDay) {
+  const d = adDate(monthIdx, bsDay);
+  return (d.getDate()) + ' ' + AD_MONTHS[d.getMonth()];
+}
+function dowOf(monthIdx, bsDay) {
+  return (MONTHS[monthIdx].start + bsDay - 1) % 7;
+}
+
+// ─── State ───
+let curMonth = 0;
+let selDay = null;
+
+// ─── Stars ───
+(function initStars() {
+  const bg = document.getElementById('sky-bg');
+  for (let i = 0; i < 100; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2 + 0.5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--a0:${(Math.random()*0.3+0.1).toFixed(2)};--a1:${(Math.random()*0.5+0.4).toFixed(2)};animation-delay:${(Math.random()*6).toFixed(1)}s;`;
+    bg.appendChild(s);
+  }
+})();
+
+// ─── Render ───
+function render() {
+  const m = MONTHS[curMonth];
+  const monthEvs = EVENTS.filter(e => e.month === curMonth).sort((a,b) => a.day - b.day);
+  const displayEvs = selDay ? EVENTS.filter(e => e.month === curMonth && e.day === selDay) : monthEvs;
+
+  // Nav label
+  document.getElementById('monthLabel').innerHTML =
+    m.name + '<br><span>' + m.season + '</span>';
+  document.getElementById('prevBtn').disabled = curMonth === 0;
+  document.getElementById('nextBtn').disabled = curMonth === MONTHS.length - 1;
+
+  // Month header
+  const hdr = document.getElementById('mpage-header');
+  hdr.className = 'mpage-header'; void hdr.offsetWidth; hdr.className = 'mpage-header'; // re-trigger animation
+  const ad1 = adLabel(curMonth, 1);
+  const adLast = adLabel(curMonth, m.days);
+  hdr.innerHTML = `
+    <span class="mpage-name">${m.name}</span>
+    <div class="mpage-meta">
+      <div class="mpage-season">${m.season} · ${m.days} days</div>
+      <div class="mpage-year-lbl">BS 2083</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${ad1} – ${adLast} AD</div>
+      ${monthEvs.length > 0 ? `<span class="mpage-evcount">${monthEvs.length} event${monthEvs.length > 1 ? 's' : ''}</span>` : ''}
+    </div>`;
+
+  // Day headers
+  const dhEl = document.getElementById('day-headers');
+  dhEl.innerHTML = WDAYS_S.map((d,i) =>
+    `<div class="day-hdr${i===0||i===6?' weekend':''}">${d}</div>`
+  ).join('');
+
+  // Calendar cells
+  const cells = [];
+  for (let i = 0; i < m.start; i++) cells.push(null);
+  for (let d = 1; d <= m.days; d++) cells.push(d);
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  let gridHTML = '';
+  for (let r = 0; r < cells.length; r += 7) {
+    gridHTML += '<div class="day-row">';
+    for (let c = 0; c < 7; c++) {
+      const day = cells[r + c];
+      if (!day) { gridHTML += '<div style="padding:4px 2px 3px;"></div>'; continue; }
+      const dow = dowOf(curMonth, day);
+      const isWE = dow === 0 || dow === 6;
+      const cellEvs = EVENTS.filter(e => e.month === curMonth && e.day === day);
+      const hasDots = cellEvs.length > 0;
+      const isSel = selDay === day;
+      const bsCls = 'bs-num' + (isWE ? ' weekend' : hasDots ? ' has-event' : '');
+      const adCls = 'ad-num' + (isWE ? ' weekend' : '');
+      const adStr = adLabel(curMonth, day);
+      const dots = hasDots
+        ? '<div class="dot-row">' + cellEvs.slice(0,3).map(ev =>
+            `<span class="ev-dot" style="background:${CC[ev.cat].dot}"></span>`
+          ).join('') + '</div>'
+        : '';
+      gridHTML += `<div class="day-cell${isSel?' selected':''}" data-day="${day}">
+        <span class="${bsCls}">${day}</span>
+        <span class="${adCls}">${adStr}</span>
+        ${dots}
+      </div>`;
+    }
+    gridHTML += '</div>';
+  }
+  document.getElementById('day-grid').innerHTML = gridHTML;
+
+  // Attach day click listeners
+  document.querySelectorAll('.day-cell').forEach(el => {
+    el.addEventListener('click', () => {
+      const d = parseInt(el.dataset.day);
+      selDay = selDay === d ? null : d;
+      render();
+    });
+  });
+
+  // Event panel header
+  document.getElementById('ep-header').innerHTML = `
+    <div class="event-panel-title">
+      <span class="dot-indicator"></span>
+      ${selDay
+        ? `Events on ${selDay} ${m.name} 2083 &nbsp;<span style="color:var(--muted);font-size:10px">(${adLabel(curMonth,selDay)} AD)</span>`
+        : `All Events — ${m.name} 2083`}
+    </div>
+    ${selDay ? `<button class="show-all-btn" id="showAllBtn">✕ Show all</button>` : ''}`;
+  if (selDay) {
+    document.getElementById('showAllBtn').onclick = () => { selDay = null; render(); };
+  }
+
+  // Event list
+  let listHTML = '';
+  if (displayEvs.length === 0) {
+    listHTML = `<div class="no-events-msg">${selDay ? `No events on ${selDay} ${m.name}.` : 'No events this month.'}</div>`;
+  } else {
+    displayEvs.forEach(ev => {
+      const c = CC[ev.cat];
+      const dow = WDAYS[dowOf(curMonth, ev.day)];
+      const ad = adLabel(curMonth, ev.day);
+      listHTML += `<div class="event-item${selDay===ev.day?' highlighted':''}" data-ev="${ev.id}">
+        <div class="ev-date-block">
+          <div class="ev-bs-num" style="color:${c.dot}">${ev.day}</div>
+          <div class="ev-dow">${dow}</div>
+          <div class="ev-ad-date">${ad}</div>
+        </div>
+        <div>
+          <div class="ev-title">${ev.name}</div>
+          ${ev.notes ? `<div class="ev-notes">${ev.notes}</div>` : ''}
+          <span class="ev-badge" style="background:${c.bg};color:${c.text}">${ev.cat}</span>
+        </div>
+        <div class="ev-stripe" style="background:${c.dot};opacity:0.7"></div>
+      </div>`;
+    });
+  }
+  document.getElementById('ep-list').innerHTML = listHTML;
+  document.querySelectorAll('.event-item').forEach(el => {
+    el.addEventListener('click', () => {
+      const evId = parseInt(el.dataset.ev);
+      const ev = EVENTS.find(e => e.id === evId);
+      if (ev) { selDay = selDay === ev.day ? null : ev.day; render(); }
+    });
+  });
+
+  // Legend
+  document.getElementById('ep-legend').innerHTML =
+    CATS.map(c => `<div class="legend-item"><div class="legend-dot" style="background:${CC[c].dot}"></div>${c.charAt(0).toUpperCase()+c.slice(1)}</div>`).join('') +
+    `<div class="legend-item"><div class="legend-dot" style="background:#F06080"></div>Sat/Sun</div>`;
+}
+
+// ─── Nav buttons ───
+document.getElementById('prevBtn').onclick = () => { if(curMonth>0){ curMonth--; selDay=null; render(); } };
+document.getElementById('nextBtn').onclick = () => { if(curMonth<11){ curMonth++; selDay=null; render(); } };
+
+// Keyboard arrows
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' && curMonth < 11) { curMonth++; selDay=null; render(); }
+  if (e.key === 'ArrowLeft'  && curMonth > 0)  { curMonth--; selDay=null; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
